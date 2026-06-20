@@ -7,12 +7,34 @@ const api = axios.create({
   },
 });
 
-export const fetchNotes = async () => {
-  const res = await api.get('/notes');
+export type Note = {
+  id: string;
+  title: string;
+  content: string;
+  tag: string;
+  createdAt: string;
+};
+
+export type NotesResponse = {
+  notes: Note[];
+  total?: number;
+};
+
+export const fetchNotes = async (
+  page: number = 1,
+  search: string = ''
+): Promise<NotesResponse> => {
+  const res = await api.get('/notes', {
+    params: {
+      page,
+      search,
+    },
+  });
+
   return res.data;
 };
 
-export const fetchNoteById = async (id: string) => {
+export const fetchNoteById = async (id: string): Promise<Note> => {
   const res = await api.get(`/notes/${id}`);
   return res.data;
 };
