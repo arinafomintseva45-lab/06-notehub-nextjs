@@ -3,20 +3,29 @@ import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
 
-interface Props {
-  onSuccess?: () => void;
-}
+type NoteTag =
+  | "Todo"
+  | "Work"
+  | "Personal"
+  | "Meeting"
+  | "Shopping";
 
 interface FormValues {
   title: string;
   content: string;
-  tag: "work" | "personal" | "other";
+  tag: NoteTag;
+}
+
+interface Props {
+  onSuccess?: () => void;
 }
 
 const schema = Yup.object({
-  title: Yup.string().required(),
-  content: Yup.string().required(),
-  tag: Yup.string().required(),
+  title: Yup.string().min(3).max(50).required(),
+  content: Yup.string().max(500),
+  tag: Yup.mixed<NoteTag>()
+    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
+    .required(),
 });
 
 export default function NoteForm({ onSuccess }: Props) {
@@ -35,26 +44,36 @@ export default function NoteForm({ onSuccess }: Props) {
       initialValues={{
         title: "",
         content: "",
-        tag: "work",
+        tag: "Todo" as const,
       }}
       validationSchema={schema}
       onSubmit={(values) => mutation.mutate(values)}
     >
-      <Form>
-        <Field name="title" />
-        <ErrorMessage name="title" />
+      {() => (
+        <Form>
+          <Field name="title" placeholder="Title" />
+          <ErrorMessage name="title" component="div" />
 
-        <Field name="content" />
-        <ErrorMessage name="content" />
+          <Field as="textarea" name="content" placeholder="Content" />
+          <ErrorMessage name="content" component="div" />
 
-        <Field as="select" name="tag">
-          <option value="work">work</option>
-          <option value="personal">personal</option>
-          <option value="other">other</option>
-        </Field>
+          <Field as="select" name="tag">
+            <option value="Todo">Todo</option>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+            <option value="Meeting">Meeting</option>
+            <option value="Shopping">Shopping</option>
+          </Field>
 
-        <button type="submit">Save</button>
-      </Form>
+          <ErrorMessage name="tag" component="div" />
+
+          <button type="button" onClick={() => onSuccess?.()}>
+            Cancel
+          </button>
+
+          <button type="submit">Create note</button>
+        </Form>
+      )}
     </Formik>
   );
 }

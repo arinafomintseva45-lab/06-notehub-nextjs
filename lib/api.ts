@@ -4,7 +4,7 @@ import { Note } from "@/types/note";
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
-    Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+    Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
   },
 });
 
@@ -26,11 +26,14 @@ export const fetchNoteById = async (id: string) => {
   return data;
 };
 
-export const createNote = async (note: Omit<Note, "id" | "createdAt" | "updatedAt">) => {
+export const createNote = async (
+  note: Omit<Note, "id" | "createdAt" | "updatedAt">
+) => {
   const { data } = await api.post<Note>("/notes", note);
   return data;
 };
 
 export const deleteNote = async (id: string) => {
-  await api.delete(`/notes/${id}`);
+  const { data } = await api.delete<Note>(`/notes/${id}`);
+  return data; 
 };
