@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import css from "./Modal.module.css";
 
 interface ModalProps {
   isOpen: boolean;
@@ -20,14 +21,20 @@ export default function Modal({
     };
 
     window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+
+    return () =>
+      window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return createPortal(
-    <div onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()}>
+    <div className={css.backdrop} onClick={onClose}>
+      <div className={css.modal} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>,
