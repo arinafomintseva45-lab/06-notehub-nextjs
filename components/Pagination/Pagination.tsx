@@ -1,30 +1,23 @@
-interface PaginationProps {
-  page: number;
-  setPage: (page: number) => void;
+import ReactPaginate from "react-paginate";
+
+interface Props {
   pageCount: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
 }
 
 export default function Pagination({
-  page,
-  setPage,
   pageCount,
-}: PaginationProps) {
-  if (pageCount <= 1) return null;
-
+  currentPage,
+  onPageChange,
+}: Props) {
   return (
-    <div>
-      <button onClick={() => setPage(page - 1)} disabled={page === 1}>
-        Prev
-      </button>
-
-      <span>{page}</span>
-
-      <button
-        onClick={() => setPage(page + 1)}
-        disabled={page === pageCount}
-      >
-        Next
-      </button>
-    </div>
+    <ReactPaginate
+      pageCount={pageCount}
+      forcePage={currentPage - 1}
+      onPageChange={(e: { selected: number }) =>
+        onPageChange(e.selected + 1)
+      }
+    />
   );
 }

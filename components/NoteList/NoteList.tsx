@@ -1,30 +1,33 @@
-import { useEffect, useState } from "react";
-import { fetchNotes } from "@/lib/api";
-import type { Note } from "@/types/note";
+import Link from "next/link";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Note } from "@/types/note";
+import { deleteNote } from "@/lib/api";
 
-interface NoteListProps {
-  page: number;
-  search: string;
+interface Props {
+  notes: Note[];
 }
 
-export default function NoteList({ page, search }: NoteListProps) {
-  const [notes, setNotes] = useState<Note[]>([]);
+export default function NoteList({ notes }: Props) {
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchNotes(page, search).then((data) => {
-      setNotes(data.notes);
-    });
-  }, [page, search]);
-
-  if (notes.length === 0) return <p>No notes</p>;
+  const mutation = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
 
   return (
     <ul>
       {notes.map((note) => (
         <li key={note.id}>
-          <h2>{note.title}</h2>
-          <p>{note.content}</p>
-          <span>{note.tag}</span>
+          <Link href={`/notes/${note.id}`}>
+            {note.title}
+          </Link>
+
+          <button onClick={() => mutation.mutate(note.id)}>
+            Delete
+          </button>
         </li>
       ))}
     </ul>

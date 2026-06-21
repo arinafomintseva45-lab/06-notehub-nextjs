@@ -1,26 +1,60 @@
-interface NoteFormProps {
-  onClose: () => void;
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNote } from "@/lib/api";
+
+interface Props {
+  onSuccess?: () => void;
 }
 
-export function NoteForm({ onClose }: NoteFormProps) {
+interface FormValues {
+  title: string;
+  content: string;
+  tag: "work" | "personal" | "other";
+}
+
+const schema = Yup.object({
+  title: Yup.string().required(),
+  content: Yup.string().required(),
+  tag: Yup.string().required(),
+});
+
+export default function NoteForm({ onSuccess }: Props) {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      onSuccess?.();
+    },
+  });
+
   return (
-    <form>
-      <input placeholder="title" />
-      <textarea placeholder="content" />
+    <Formik<FormValues>
+      initialValues={{
+        title: "",
+        content: "",
+        tag: "work",
+      }}
+      validationSchema={schema}
+      onSubmit={(values) => mutation.mutate(values)}
+    >
+      <Form>
+        <Field name="title" />
+        <ErrorMessage name="title" />
 
-      <select>
-        <option>Todo</option>
-        <option>Work</option>
-        <option>Personal</option>
-        <option>Meeting</option>
-        <option>Shopping</option>
-      </select>
+        <Field name="content" />
+        <ErrorMessage name="content" />
 
-      <button type="button" onClick={onClose}>
-        Cancel
-      </button>
+        <Field as="select" name="tag">
+          <option value="work">work</option>
+          <option value="personal">personal</option>
+          <option value="other">other</option>
+        </Field>
 
-      <button type="submit">Create</button>
-    </form>
+        <button type="submit">Save</button>
+      </Form>
+    </Formik>
   );
 }
