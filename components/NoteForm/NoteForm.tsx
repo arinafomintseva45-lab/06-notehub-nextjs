@@ -16,8 +16,8 @@ interface FormValues {
   tag: NoteTag;
 }
 
-interface Props {
-  onSuccess?: () => void;
+interface NoteFormProps {
+  onClose?: () => void;
 }
 
 const schema = Yup.object({
@@ -28,14 +28,14 @@ const schema = Yup.object({
     .required(),
 });
 
-export default function NoteForm({ onSuccess }: Props) {
+export default function NoteForm({ onClose }: NoteFormProps) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      onSuccess?.();
+      onClose?.();
     },
   });
 
@@ -49,31 +49,27 @@ export default function NoteForm({ onSuccess }: Props) {
       validationSchema={schema}
       onSubmit={(values) => mutation.mutate(values)}
     >
-      {() => (
-        <Form>
-          <Field name="title" placeholder="Title" />
-          <ErrorMessage name="title" component="div" />
+      <Form>
+        <Field name="title" />
+        <ErrorMessage name="title" />
 
-          <Field as="textarea" name="content" placeholder="Content" />
-          <ErrorMessage name="content" component="div" />
+        <Field as="textarea" name="content" />
+        <ErrorMessage name="content" />
 
-          <Field as="select" name="tag">
-            <option value="Todo">Todo</option>
-            <option value="Work">Work</option>
-            <option value="Personal">Personal</option>
-            <option value="Meeting">Meeting</option>
-            <option value="Shopping">Shopping</option>
-          </Field>
+        <Field as="select" name="tag">
+          <option value="Todo">Todo</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Shopping">Shopping</option>
+        </Field>
 
-          <ErrorMessage name="tag" component="div" />
+        <button type="button" onClick={onClose}>
+          Cancel
+        </button>
 
-          <button type="button" onClick={() => onSuccess?.()}>
-            Cancel
-          </button>
-
-          <button type="submit">Create note</button>
-        </Form>
-      )}
+        <button type="submit">Create note</button>
+      </Form>
     </Formik>
   );
 }

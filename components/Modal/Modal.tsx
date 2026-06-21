@@ -1,20 +1,27 @@
+"use client";
+
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
-interface Props {
+interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
 }
 
-export default function Modal({ isOpen, onClose, children }: Props) {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+}: ModalProps) {
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "auto";
-
-    return () => {
-      document.body.style.overflow = "auto";
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
     };
-  }, [isOpen]);
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
 
   if (!isOpen) return null;
 
